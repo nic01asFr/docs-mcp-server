@@ -186,19 +186,3 @@ prod_config = DocsConfig(
 dev_server = DocsServer(config=dev_config, server_name="docs-dev")
 prod_server = DocsServer(config=prod_config, server_name="docs-prod")
 ```
-
-### Custom HTTP Client Settings
-
-```python
-import httpx
-from docs_mcp_server import DocsAPIClient
-
-# Custom HTTP client with specific settings
-custom_client = httpx.AsyncClient(
-    timeout=60.0,
-    limits=httpx.Limits(max_connections=10),
-    verify=False  # For self-signed certificates
-)
-
-api_client = DocsAPIClient(http_client=custom_client)
-```
