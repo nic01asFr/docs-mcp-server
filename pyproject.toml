@@ -1,0 +1,253 @@
+[project]
+name = "docs-mcp-server"
+dynamic = ["version"]
+description = "MCP Server for DINUM Docs - Professional collaborative document management through Model Context Protocol"
+authors = [
+    { name = "Nicolas François", email = "nicolas.francois@example.com" }
+]
+maintainers = [
+    { name = "Nicolas François", email = "nicolas.francois@example.com" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = [
+    "mcp",
+    "mcp-server",
+    "docs",
+    "dinum",
+    "collaboration",
+    "document-management",
+    "model-context-protocol",
+    "api",
+    "government",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Office/Business :: Groupware",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "mcp>=1.9.4,<2.0.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "typer>=0.12.0",
+    "tenacity>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.12.0",
+    "pytest-httpx>=0.35.0",
+    "pytest-timeout>=2.4.0",
+    "pyright>=1.1.389",
+    "ruff>=0.7.0",
+    "pre-commit>=3.0.0",
+    "httpx-mock>=0.17.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.25.0",
+]
+examples = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.29.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/nic01asFr/docs-mcp-server"
+Repository = "https://github.com/nic01asFr/docs-mcp-server"
+Documentation = "https://github.com/nic01asFr/docs-mcp-server#readme"
+"Bug Tracker" = "https://github.com/nic01asFr/docs-mcp-server/issues"
+Changelog = "https://github.com/nic01asFr/docs-mcp-server/releases"
+
+[project.scripts]
+docs-mcp-server = "docs_mcp_server.cli:main"
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docs_mcp_server"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/examples",
+    "/docs",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py310"
+src = ["src", "tests"]
+line-length = 88
+extend-exclude = [
+    "__pycache__",
+    "build",
+    "dist",
+    ".git",
+    ".venv",
+    ".env",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+]
+ignore = [
+    "E501",  # line too long, handled by formatter
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "W191",  # indentation contains tabs
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["S101", "ARG", "FBT"]
+"examples/**/*" = ["S101", "T201", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["docs_mcp_server"]
+
+# Pyright configuration
+[tool.pyright]
+include = ["src", "tests"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv",
+    ".git",
+    "build",
+    "dist",
+]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportPrivateUsage = "warning"
+reportUnknownArgumentType = "warning"
+reportUnknownLambdaType = "warning"
+reportUnknownMemberType = "warning"
+reportUnknownParameterType = "warning"
+reportUnknownVariableType = "warning"
+reportUnsupportedDunderAll = "warning"
+reportUntypedFunctionDecorator = "warning"
+
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "--cov=src/docs_mcp_server",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--strict-markers",
+    "--disable-warnings",
+    "-ra",
+]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+asyncio_mode = "auto"
+timeout = 30
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["src/docs_mcp_server"]
+omit = [
+    "tests/*",
+    "examples/*",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Pre-commit hooks
+[tool.pre-commit]
+repos = [
+    {
+        repo = "https://github.com/pre-commit/pre-commit-hooks",
+        rev = "v4.6.0",
+        hooks = [
+            { id = "trailing-whitespace" },
+            { id = "end-of-file-fixer" },
+            { id = "check-yaml" },
+            { id = "check-added-large-files" },
+            { id = "check-merge-conflict" },
+        ]
+    },
+    {
+        repo = "https://github.com/astral-sh/ruff-pre-commit",
+        rev = "v0.7.4",
+        hooks = [
+            { id = "ruff", args = ["--fix"] },
+            { id = "ruff-format" },
+        ]
+    },
+    {
+        repo = "https://github.com/pre-commit/mirrors-mypy",
+        rev = "v1.11.2",
+        hooks = [
+            { id = "mypy", additional_dependencies = ["types-all"] },
+        ]
+    },
+]
