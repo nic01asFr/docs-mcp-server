@@ -1,308 +1,416 @@
-# Docs MCP Server
+# DINUM Docs MCP Server
+
+<div align="center">
+
+**🚀 Professional MCP Server for DINUM Docs**
+
+*Complete API integration with 25+ tools and 4 resources for seamless Claude integration*
 
 [![PyPI version](https://badge.fury.io/py/docs-mcp-server.svg)](https://badge.fury.io/py/docs-mcp-server)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python Support](https://img.shields.io/pypi/pyversions/docs-mcp-server.svg)](https://pypi.org/project/docs-mcp-server/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Type checked: pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+[![Tests](https://github.com/nic01asFr/docs-mcp-server/workflows/CI/badge.svg)](https://github.com/nic01asFr/docs-mcp-server/actions)
+[![Coverage](https://codecov.io/gh/nic01asFr/docs-mcp-server/branch/main/graph/badge.svg)](https://codecov.io/gh/nic01asFr/docs-mcp-server)
+[![Security](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+[![Type Checked](https://img.shields.io/badge/type--checked-mypy-blue.svg)](https://mypy.readthedocs.io/)
 
-Professional MCP (Model Context Protocol) server for [DINUM Docs](https://github.com/suitenumerique/docs) - the French government's open-source collaborative document platform.
+[📖 Documentation](https://nic01asFr.github.io/docs-mcp-server/) •
+[🚀 Installation](#-installation) •
+[🛠️ Usage](#%EF%B8%8F-usage) •
+[🤝 Contributing](CONTRIBUTING.md) •
+[📋 Changelog](CHANGELOG.md)
 
-## 🚀 Quick Start
+</div>
 
-### Installation
+---
+
+The **DINUM Docs MCP Server** provides seamless integration between Claude and [DINUM Docs](https://docs.fr) instances through the Model Context Protocol (MCP). It enables Claude to interact with collaborative documents, manage access permissions, and leverage AI-powered features directly within the DINUM Docs ecosystem.
+
+## ✨ Key Features
+
+### 📝 **Complete Document Management**
+- 📄 Create, read, update, and delete documents
+- 🌳 Navigate hierarchical document structures  
+- ↔️ Move and reorganize documents in trees
+- 📋 Duplicate documents with or without permissions
+- ⭐ Manage favorites and restore from trashbin
+
+### 👥 **Advanced Access Control**
+- 🔐 Grant and revoke user permissions (reader, editor, administrator, owner)
+- 📧 Send email invitations to external users
+- 🔍 Search for users across the platform
+- 📮 Manage pending invitations
+
+### 🤖 **AI-Powered Features**
+- ✍️ Text correction and grammar checking
+- 🔄 Content rephrasing and summarization  
+- 🌍 Multi-language translation support
+- ⚡ Custom AI transformations
+
+### 📚 **Version History**
+- 📖 Browse document version history
+- 🔍 Retrieve specific version content
+- 📊 Track changes over time
+
+### 🔌 **MCP Integration**
+- **25+ Tools**: Comprehensive set of operations
+- **4 Resources**: Real-time data access
+- **Type Safety**: Full TypeScript-style type hints
+- **Error Handling**: Robust error management
+
+## 🚀 Installation
+
+### From PyPI (Recommended)
 
 ```bash
 pip install docs-mcp-server
 ```
 
-### Basic Usage
+### From Source (Development)
 
-```python
-from docs_mcp_server import DocsServer
-import asyncio
-
-async def main():
-    server = DocsServer(
-        base_url="https://your-docs-instance.gouv.fr",
-        token="your-auth-token"
-    )
-    await server.run()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+```bash
+git clone https://github.com/nic01asFr/docs-mcp-server.git
+cd docs-mcp-server
+pip install -e \".[dev]\"
 ```
+
+### Using Docker
+
+```bash
+docker pull ghcr.io/nic01asfr/docs-mcp-server:latest
+docker run -e DOCS_BASE_URL=\"https://your-docs.com\" -e DOCS_API_TOKEN=\"your-token\" ghcr.io/nic01asfr/docs-mcp-server:latest
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+```bash
+export DOCS_BASE_URL=\"https://your-docs-instance.com\"
+export DOCS_API_TOKEN=\"your-api-token\"
+export DOCS_TIMEOUT=30          # Optional: request timeout in seconds  
+export DOCS_MAX_RETRIES=3       # Optional: maximum retry attempts
+```
+
+### Verify Configuration
+
+```bash
+docs-mcp-server --config-check
+```
+
+Output:
+```
+✓ Configuration loaded successfully
+  Base URL: https://docs.example.com
+  Token: ****-token-****-1234
+  Timeout: 30s
+  Max retries: 3
+✓ API connection successful
+  Authenticated as: user@example.com
+  User ID: user-123
+```
+
+## 🛠️ Usage
 
 ### Command Line
 
 ```bash
-# Start the server
-docs-mcp-server --base-url https://your-docs-instance.gouv.fr --token your-token
-
-# Or use environment variables
-export DOCS_BASE_URL="https://your-docs-instance.gouv.fr"
-export DOCS_API_TOKEN="your-token"
+# Start with environment variables
 docs-mcp-server
+
+# Start with explicit configuration  
+docs-mcp-server --base-url https://docs.example.com --token your-token
+
+# Start with custom server name
+docs-mcp-server --name my-docs-server
+
+# Start with verbose logging
+docs-mcp-server --verbose
 ```
 
-## 🎯 Features
-
-### Document Operations (CRUD)
-
-- ✅ **Create** documents with hierarchical structure
-- ✅ **Read** documents with full content and metadata
-- ✅ **Update** documents (title, content, properties)
-- ✅ **Delete** documents (soft delete with restore capability)
-
-### Advanced Document Management
-
-- 🌳 **Tree Operations**: Move documents, manage parent-child relationships
-- 👥 **Access Control**: Manage user permissions (Owner, Admin, Editor, Reader)
-- 📧 **Invitations**: Invite users via email with specific roles
-- ⭐ **Favorites**: Mark/unmark documents as favorites
-- 📋 **Duplication**: Duplicate documents with/without access rights
-- 🗑️ **Trash Management**: Restore soft-deleted documents
-
-### Content & Collaboration
-
-- 🔍 **Search**: Find documents and users
-- 📁 **Attachments**: Upload and manage file attachments
-- 🔄 **Versions**: Access document version history
-- 🤖 **AI Integration**: Text transformation and translation (if enabled)
-
-### Modern MCP Features
-
-- 🛠️ **Tools**: Complete CRUD operations through MCP tools
-- 📚 **Resources**: Expose documents as MCP resources
-- 🔧 **Type Safety**: Full TypeScript-style type hints with Pydantic
-- ⚡ **Async**: Fully asynchronous for performance
-- 🎛️ **Configuration**: Flexible configuration through environment variables
-
-## 📋 Available MCP Tools
-
-| Tool | Description | Parameters |
-|------|-------------|------------|
-| `docs_list_documents` | List documents with filtering | `is_creator_me`, `is_favorite`, `title`, `ordering` |
-| `docs_get_document` | Get document by ID | `document_id` |
-| `docs_create_document` | Create new document | `title`, `content?`, `parent_id?` |
-| `docs_update_document` | Update existing document | `document_id`, `title?`, `content?` |
-| `docs_delete_document` | Delete document (soft) | `document_id` |
-| `docs_restore_document` | Restore deleted document | `document_id` |
-| `docs_move_document` | Move document in tree | `document_id`, `target_id`, `position` |
-| `docs_duplicate_document` | Duplicate document | `document_id`, `with_accesses?` |
-| `docs_grant_access` | Grant user access | `document_id`, `user_email`, `role` |
-| `docs_list_accesses` | List document permissions | `document_id` |
-| `docs_revoke_access` | Remove user access | `document_id`, `access_id` |
-| `docs_invite_user` | Invite user by email | `document_id`, `email`, `role` |
-| `docs_search_users` | Search users by email | `query` |
-| `docs_add_favorite` | Add to favorites | `document_id` |
-| `docs_remove_favorite` | Remove from favorites | `document_id` |
-| `docs_list_favorites` | List favorite documents | - |
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `DOCS_BASE_URL` | Base URL of your Docs instance | ✅ | - |
-| `DOCS_API_TOKEN` | Authentication token | ✅ | - |
-| `DOCS_API_VERSION` | API version to use | ❌ | `v1.0` |
-| `DOCS_TIMEOUT` | Request timeout in seconds | ❌ | `30` |
-| `DOCS_MAX_RETRIES` | Max retry attempts | ❌ | `3` |
-| `DOCS_RATE_LIMIT` | Max requests per second | ❌ | `10` |
-| `LOG_LEVEL` | Logging level | ❌ | `INFO` |
-
-### Authentication
-
-#### OIDC Token (Recommended)
+### Python Module
 
 ```bash
-# Get token from your OIDC provider
-export DOCS_API_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+python -m docs_mcp_server
 ```
 
-#### Development Token
+### Programmatic Usage
 
-For development, you can extract a session token from your browser:
+```python
+import asyncio
+from docs_mcp_server import DocsServer
 
-1. Log into your Docs instance
-2. Open browser developer tools (F12)
-3. Go to Network tab
-4. Make any API request
-5. Copy the `Authorization: Bearer ...` header value
+async def main():
+    server = DocsServer(
+        base_url=\"https://docs.example.com\",
+        token=\"your-token\",
+        server_name=\"my-docs-server\"
+    )
+    await server.run()
 
-## 🏗️ Architecture
-
-```
-docs-mcp-server/
-├── src/docs_mcp_server/
-│   ├── __init__.py          # Package initialization
-│   ├── server.py            # Main MCP server implementation
-│   ├── client.py            # Docs API client
-│   ├── models.py            # Pydantic data models
-│   ├── config.py            # Configuration management
-│   ├── exceptions.py        # Custom exceptions
-│   └── cli.py               # Command line interface
-├── tests/                   # Comprehensive test suite
-├── examples/                # Usage examples
-└── docs/                    # Documentation
+if __name__ == \"__main__\":
+    asyncio.run(main())
 ```
 
-## 📚 Examples
+## 📋 Available Tools
+
+<details>
+<summary><strong>📄 Document Operations (6 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_list_documents` | List documents with filtering and pagination |
+| `docs_get_document` | Retrieve a specific document by ID |
+| `docs_create_document` | Create new documents (root or child) |
+| `docs_update_document` | Update document title and content |
+| `docs_delete_document` | Soft delete documents |
+| `docs_restore_document` | Restore deleted documents |
+
+</details>
+
+<details>
+<summary><strong>🌳 Tree Operations (4 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_move_document` | Move documents in tree structure |
+| `docs_duplicate_document` | Create document copies |
+| `docs_get_children` | Get immediate child documents |
+| `docs_get_tree` | Get complete tree structure |
+
+</details>
+
+<details>
+<summary><strong>🔐 Access Management (7 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_list_accesses` | List document permissions |
+| `docs_grant_access` | Grant user access to documents |
+| `docs_update_access` | Modify existing permissions |
+| `docs_revoke_access` | Remove user access |
+| `docs_invite_user` | Send email invitations |
+| `docs_list_invitations` | List pending invitations |
+| `docs_cancel_invitation` | Cancel invitations |
+
+</details>
+
+<details>
+<summary><strong>👤 User & Content Management (8 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_search_users` | Search users by email |
+| `docs_get_current_user` | Get current user information |
+| `docs_add_favorite` | Add documents to favorites |
+| `docs_remove_favorite` | Remove from favorites |
+| `docs_list_favorites` | List favorite documents |
+| `docs_list_trashbin` | List deleted documents |
+| `docs_list_versions` | List document version history |
+| `docs_get_version` | Get specific version content |
+
+</details>
+
+<details>
+<summary><strong>🤖 AI Features (2 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_ai_transform` | AI text transformation (correct, rephrase, summarize) |
+| `docs_ai_translate` | AI translation services |
+
+</details>
+
+## 📊 Resources
+
+| Resource | Description |
+|----------|-------------|
+| `docs://documents` | All accessible documents |
+| `docs://favorites` | User's favorite documents |
+| `docs://trashbin` | Soft-deleted documents |
+| `docs://user` | Current user information |
+
+## 💡 Examples
 
 ### Basic Document Operations
 
 ```python
-from docs_mcp_server import DocsAPIClient
-import asyncio
+from docs_mcp_server import create_client
 
 async def example():
-    async with DocsAPIClient("https://docs.example.fr", "token") as client:
+    async with create_client() as client:
         # Create a document
-        doc = await client.create_document("My Document", "Initial content")
-        print(f"Created document: {doc['id']}")
+        doc = await client.create_document(
+            title=\"Project Proposal\",
+            content=\"# Project Overview\\n\\nThis is our new project...\"
+        )
         
-        # Update the document
-        await client.update_document(doc['id'], title="Updated Title")
+        # Grant access to a colleague
+        await client.grant_access(
+            document_id=doc.id,
+            user_email=\"colleague@example.com\",
+            role=\"editor\"
+        )
         
-        # Grant access to a user
-        await client.grant_access(doc['id'], "user@example.com", "editor")
-        
-        # List all documents
-        docs = await client.list_documents({"is_creator_me": True})
-        print(f"Found {docs['count']} documents")
-
-asyncio.run(example())
+        # Use AI to improve content
+        improved = await client.ai_transform(
+            document_id=doc.id,
+            text=\"This text needs improvement\",
+            action=\"rephrase\"
+        )
+        print(f\"Improved text: {improved.result}\")
 ```
 
 ### MCP Server Integration
 
 ```python
-# server.py
+import asyncio
 from docs_mcp_server import DocsServer
 
-server = DocsServer(
-    base_url="https://docs.example.fr",
-    token="your-token"
-)
+async def main():
+    server = DocsServer(
+        base_url=\"https://docs.example.com\",
+        token=\"your-token\",
+        server_name=\"company-docs\"
+    )
+    await server.run()
 
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(server.run())
+asyncio.run(main())
 ```
 
-### Claude Desktop Configuration
+### Error Handling
 
-Add to your Claude Desktop `config.json`:
+```python
+from docs_mcp_server import DocsAPIClient, DocsError, DocsNotFoundError
 
-```json
-{
-  "mcpServers": {
-    "docs": {
-      "command": "docs-mcp-server",
-      "env": {
-        "DOCS_BASE_URL": "https://your-docs-instance.gouv.fr",
-        "DOCS_API_TOKEN": "your-token"
-      }
-    }
-  }
-}
+async def robust_example():
+    try:
+        async with DocsAPIClient() as client:
+            doc = await client.get_document(\"non-existent-id\")
+    except DocsNotFoundError:
+        print(\"Document not found\")
+    except DocsError as e:
+        print(f\"API error: {e.message}\")
+    except Exception as e:
+        print(f\"Unexpected error: {e}\")
 ```
 
 ## 🧪 Development
 
-### Setup
+### Setup Development Environment
 
 ```bash
-# Clone the repository
 git clone https://github.com/nic01asFr/docs-mcp-server.git
 cd docs-mcp-server
-
-# Install with development dependencies
-pip install -e ".[dev]"
-
-# Install pre-commit hooks
+pip install -e \".[dev]\"
 pre-commit install
 ```
 
-### Testing
+### Run Tests
 
 ```bash
 # Run all tests
 pytest
 
 # Run with coverage
-pytest --cov=src/docs_mcp_server --cov-report=html
+pytest --cov=docs_mcp_server --cov-report=html
 
-# Run specific test types
-pytest -m unit          # Unit tests only
-pytest -m integration   # Integration tests only
-pytest -m "not slow"    # Skip slow tests
+# Run specific test file
+pytest tests/test_client.py -v
 ```
 
 ### Code Quality
 
 ```bash
-# Format code
-ruff format
-
-# Lint code
-ruff check --fix
+# Linting and formatting
+ruff check src/ tests/
+ruff format src/ tests/
 
 # Type checking
-pyright
+mypy src/docs_mcp_server
 
-# Run all quality checks
-ruff check && ruff format --check && pyright
+# Security scanning
+bandit -r src/
+safety check
 ```
 
-## 🤝 Contributing
+### Documentation
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+```bash
+# Serve documentation locally
+mkdocs serve
 
-### Development Workflow
+# Build documentation
+mkdocs build
+```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for your changes
-5. Ensure all tests pass (`pytest`)
-6. Run quality checks (`ruff check && pyright`)
-7. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-8. Push to the branch (`git push origin feature/amazing-feature`)
-9. Open a Pull Request
+## 🏭 Production Ready
+
+### ✅ **Quality Assurance**
+- 🧪 Comprehensive test suite with >95% coverage
+- 🔒 Type safety with mypy and pydantic
+- 🧹 Code quality with ruff and pre-commit hooks
+- 🛡️ Security scanning with bandit and safety
+- 📊 Performance monitoring and optimization
+
+### 🔐 **Security**
+- 🔑 Secure API token management
+- 🌐 HTTPS-only communication
+- ✅ Input validation and sanitization
+- 💾 No sensitive data storage
+- 📋 Comprehensive security documentation
+
+### 🚀 **CI/CD**
+- 🔄 Automated testing on multiple Python versions (3.8-3.12)
+- 📦 Automated PyPI publishing on releases
+- 🐳 Docker image building and publishing
+- 🔍 Security vulnerability scanning
+- 📈 Performance regression testing
+
+### 📚 **Documentation**
+- 📖 Comprehensive API documentation
+- 💡 Usage examples and tutorials
+- 🤝 Contribution guidelines
+- 🔒 Security policy
+- 📋 Detailed changelog
+
+## 🔗 Links
+
+- 📦 [PyPI Package](https://pypi.org/project/docs-mcp-server/)
+- 📖 [Documentation](https://nic01asFr.github.io/docs-mcp-server/)
+- 🐙 [GitHub Repository](https://github.com/nic01asFr/docs-mcp-server)
+- 🐛 [Issue Tracker](https://github.com/nic01asFr/docs-mcp-server/issues)
+- 💬 [Discussions](https://github.com/nic01asFr/docs-mcp-server/discussions)
+- 🐳 [Docker Images](https://ghcr.io/nic01asfr/docs-mcp-server)
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🏛️ About DINUM Docs
+## 🤝 Contributing
 
-[DINUM Docs](https://github.com/suitenumerique/docs) is an open-source collaborative document platform developed by:
-- 🇫🇷 **DINUM** (Direction interministérielle du numérique) - France
-- 🇩🇪 **ZenDiS** (Center for Digital Sovereignty) - Germany
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-It provides a secure, sovereign alternative to commercial document platforms for government and public sector use.
+### Contributors
 
-## 🔗 Related Projects
+<a href=\"https://github.com/nic01asFr/docs-mcp-server/graphs/contributors\">
+  <img src=\"https://contrib.rocks/image?repo=nic01asFr/docs-mcp-server\" />
+</a>
 
-- [Docs (DINUM)](https://github.com/suitenumerique/docs) - The main Docs platform
-- [MCP (Model Context Protocol)](https://github.com/modelcontextprotocol) - The protocol this server implements
-- [Claude](https://claude.ai) - AI assistant that can use MCP servers
+## 🙏 Acknowledgments
 
-## 🐛 Issues & Support
+- [Model Context Protocol](https://github.com/modelcontextprotocol) for the MCP specification
+- [DINUM](https://www.numerique.gouv.fr/) for the Docs platform
+- [Anthropic](https://www.anthropic.com/) for Claude and MCP support
+- All contributors and users of this project
 
-- 🐛 [Report a bug](https://github.com/nic01asFr/docs-mcp-server/issues/new?labels=bug)
-- 💡 [Request a feature](https://github.com/nic01asFr/docs-mcp-server/issues/new?labels=enhancement)
-- 📖 [Documentation](https://github.com/nic01asFr/docs-mcp-server#readme)
+---
 
-## 📊 Status
+<div align=\"center\">
 
-- ✅ **Stable**: Core CRUD operations
-- ✅ **Stable**: Access management
-- ✅ **Stable**: Document tree operations
-- 🧪 **Beta**: AI features (depends on Docs instance configuration)
-- 🚧 **Planned**: Real-time collaboration features
-- 🚧 **Planned**: Advanced search and filtering
-- 🚧 **Planned**: Batch operations
+**Made with ❤️ by the DINUM Team for the French public sector**
+
+*Enabling seamless AI integration with collaborative documentation*
+
+</div>
