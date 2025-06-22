@@ -1,5 +1,4 @@
 """Professional MCP Server for DINUM Docs."""
-
 import json
 import logging
 from typing import Any, Dict, List, Optional, Sequence
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class DocsServer:
     """Professional MCP Server for DINUM Docs."""
-
+    
     def __init__(
         self,
         base_url: Optional[str] = None,
