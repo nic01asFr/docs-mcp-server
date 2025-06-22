@@ -4,7 +4,6 @@
 
 **Date de release**: 2025-06-22  
 **Status**: ✅ PRODUCTION READY  
-**Commit**: 8050d92f32972f4915afd681de40d0a6c8bcbd12
 
 ## 📦 Package Details
 
@@ -32,7 +31,7 @@
 ### Documentation
 - ✅ **User Documentation** (installation, usage, API reference)
 - ✅ **Developer Documentation** (contributing, examples)
-- ✅ **Governance Files** (CoC, security policy)
+- ✅ **Claude Desktop Integration Guide**
 
 ### Deployment
 - ✅ **Docker Support** with multi-stage build
@@ -60,7 +59,7 @@ docs-mcp-server
 
 - **Source Size**: ~50 files, 2,500+ lines of code
 - **Package Size**: Estimated ~100KB
-- **Dependencies**: 8 core packages + dev dependencies
+- **Dependencies**: 7 core packages + dev dependencies
 - **Test Coverage**: >85% target
 - **Docker Image**: Multi-arch (amd64, arm64)
 
@@ -78,7 +77,6 @@ docs-mcp-server
 ## 🔗 Links
 
 - **Repository**: https://github.com/nic01asFr/docs-mcp-server
-- **Documentation**: https://nic01asFr.github.io/docs-mcp-server/
 - **PyPI** (post-release): https://pypi.org/project/docs-mcp-server/
 - **Docker** (post-release): ghcr.io/nic01asfr/docs-mcp-server
 
@@ -88,8 +86,8 @@ docs-mcp-server
 - [x] Documentation written and reviewed
 - [x] PyPI configuration validated
 - [x] Docker build verified
-- [x] CI/CD pipelines tested
-- [x] Security audit passed
+- [x] CI/CD pipelines fixed and tested
+- [x] Security audit configured
 - [x] Version tagged and ready
 - [x] Release notes prepared
 
@@ -98,3 +96,11 @@ docs-mcp-server
 **🎉 Ready for PyPI publication and Docker registry push!**
 
 This release brings the first production-ready MCP server for DINUM Docs API integration, enabling seamless document management through the Model Context Protocol.
+
+## 📋 Quick Start for Users
+
+1. **Install**: `pip install docs-mcp-server`
+2. **Configure**: Set `DOCS_BASE_URL` and `DOCS_API_TOKEN`
+3. **Test**: `docs-mcp-server --config-check`
+4. **Integrate**: Add to Claude Desktop configuration
+5. **Use**: Start managing documents through Claude!
