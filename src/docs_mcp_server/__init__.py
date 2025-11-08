@@ -1,49 +1,49 @@
-"""DINUM Docs MCP Server - Professional integration for collaborative documentation."""
+"""Docs MCP Server - Professional integration for collaborative documentation."""
 
-__version__ = "0.1.0"
-__author__ = "DINUM Team"
-__description__ = "Professional MCP Server for DINUM Docs - Complete API integration with 25+ tools"
+__version__ = "0.2.0"
+__author__ = "Nicolas LAVAL"
+__description__ = "Professional MCP Server for Docs - Complete API integration with 31 tools"
 
-from .server import DocsServer
 from .client import DocsAPIClient
 from .config import DocsConfig, get_global_config
-from .exceptions import DocsError, DocsAPIError, DocsAuthError, DocsNotFoundError
+from .exceptions import DocsAPIError, DocsAuthError, DocsError, DocsNotFoundError
 from .models import (
-    Document,
-    DocumentList,
-    User,
-    Access,
-    Invitation,
-    Version,
     AITransformResponse,
     AITranslateResponse,
+    Document,
+    DocumentAccess,
+    DocumentListResponse,
+    DocumentVersion,
+    Invitation,
+    User,
 )
+from .server import DocsServer
 
 __all__ = [
     # Core classes
     "DocsServer",
-    "DocsAPIClient", 
+    "DocsAPIClient",
     "DocsConfig",
-    
+
     # Configuration
     "get_global_config",
-    
+
     # Exceptions
     "DocsError",
-    "DocsAPIError", 
+    "DocsAPIError",
     "DocsAuthError",
     "DocsNotFoundError",
-    
+
     # Models
     "Document",
-    "DocumentList",
+    "DocumentListResponse",
     "User",
-    "Access", 
+    "DocumentAccess",
     "Invitation",
-    "Version",
+    "DocumentVersion",
     "AITransformResponse",
     "AITranslateResponse",
-    
+
     # Package info
     "__version__",
     "__author__",
@@ -102,5 +102,5 @@ def create_client(
         if token:
             os.environ["DOCS_API_TOKEN"] = token
         config = DocsConfig()
-    
+
     return DocsAPIClient(config=config)

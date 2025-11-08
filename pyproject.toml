@@ -4,14 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docs-mcp-server"
-version = "0.1.0"
-description = "Professional MCP Server for DINUM Docs - Complete API integration with 25+ tools"
+version = "0.2.0"
+description = "Professional MCP Server for Docs - Complete API integration with document editing via Yjs"
 authors = [
-    {name = "DINUM Team", email = "contact@numerique.gouv.fr"},
-    {name = "Nicolas", email = "nicolas@example.com"}
+    {name = "Nicolas LAVAL", email = "laval.nicolas13@gmail.com"}
 ]
 maintainers = [
-    {name = "DINUM Team", email = "contact@numerique.gouv.fr"}
+    {name = "Nicolas LAVAL", email = "laval.nicolas13@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -34,9 +33,9 @@ classifiers = [
     "Typing :: Typed"
 ]
 keywords = [
-    "mcp", "model-context-protocol", "claude", "anthropic", 
-    "docs", "dinum", "documentation", "collaboration",
-    "api", "server", "ai", "government", "france"
+    "mcp", "model-context-protocol", "claude",
+    "docs", "documentation", "collaboration",
+    "api", "server", "ai", "yjs", "crdt"
 ]
 dependencies = [
     "mcp>=1.0.0",
@@ -45,7 +44,9 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "click>=8.0.0",
     "rich>=13.0.0",
-    "typing-extensions>=4.5.0"
+    "typing-extensions>=4.5.0",
+    "tenacity>=8.0.0",
+    "pycrdt>=0.12.0"  # Yjs CRDT for document content editing
 ]
 
 [project.optional-dependencies]

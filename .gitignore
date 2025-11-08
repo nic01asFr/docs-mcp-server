@@ -68,6 +68,7 @@ Thumbs.db
 
 # Project specific
 .docs_mcp_server/
+.archived/
 config.json
 *.log
 
@@ -104,3 +105,13 @@ dmypy.json
 token
 token.*
 secrets.*
+
+# Development files (keep local only)
+/ANALYSE_*.md
+/ARCHITECTURE_*.md
+/COLLABORATION_*.md
+/PHASE_*.md
+/VALIDATION_*.md
+/test_*.py
+/validate_*.py
+/env.example

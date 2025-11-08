@@ -1,12 +1,12 @@
 """Custom exceptions for the Docs MCP Server."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class DocsError(Exception):
     """Base exception class for all Docs MCP Server errors."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__(message)
         self.message = message
         self.details = details or {}
@@ -18,8 +18,8 @@ class DocsAPIError(DocsError):
     def __init__(
         self,
         message: str,
-        status_code: Optional[int] = None,
-        response_data: Optional[Dict[str, Any]] = None,
+        status_code: int | None = None,
+        response_data: dict[str, Any] | None = None,
     ) -> None:
         super().__init__(message, {"status_code": status_code, "response": response_data})
         self.status_code = status_code
@@ -50,7 +50,7 @@ class DocsTimeoutError(DocsError):
 class DocsValidationError(DocsError):
     """Exception raised when input validation fails."""
 
-    def __init__(self, message: str, field: Optional[str] = None) -> None:
+    def __init__(self, message: str, field: str | None = None) -> None:
         super().__init__(message, {"field": field} if field else {})
         self.field = field
 
@@ -68,7 +68,7 @@ class DocsNotFoundError(DocsAPIError):
 class DocsPermissionError(DocsAPIError):
     """Exception raised when the user doesn't have permission for an operation."""
 
-    def __init__(self, operation: str, resource: Optional[str] = None) -> None:
+    def __init__(self, operation: str, resource: str | None = None) -> None:
         message = f"Permission denied for operation: {operation}"
         if resource:
             message += f" on {resource}"
@@ -80,7 +80,7 @@ class DocsPermissionError(DocsAPIError):
 class DocsRateLimitError(DocsAPIError):
     """Exception raised when the API rate limit is exceeded."""
 
-    def __init__(self, retry_after: Optional[int] = None) -> None:
+    def __init__(self, retry_after: int | None = None) -> None:
         message = "API rate limit exceeded"
         if retry_after:
             message += f". Retry after {retry_after} seconds"

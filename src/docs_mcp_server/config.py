@@ -1,11 +1,10 @@
 """Configuration management for the Docs MCP Server."""
 
-import os
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
-from pydantic import BaseSettings, Field, HttpUrl, validator
-from pydantic.env_settings import SettingsSourceCallable
+from pydantic import Field, HttpUrl, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DocsConfig(BaseSettings):
@@ -17,13 +16,13 @@ class DocsConfig(BaseSettings):
         env="DOCS_BASE_URL",
         description="Base URL of the Docs instance (e.g., https://docs.example.gouv.fr)",
     )
-    
+
     api_token: str = Field(
         ...,
-        env="DOCS_API_TOKEN", 
+        env="DOCS_API_TOKEN",
         description="Authentication token for the Docs API",
     )
-    
+
     api_version: str = Field(
         default="v1.0",
         env="DOCS_API_VERSION",
@@ -38,7 +37,7 @@ class DocsConfig(BaseSettings):
         le=300,
         description="Request timeout in seconds",
     )
-    
+
     max_retries: int = Field(
         default=3,
         env="DOCS_MAX_RETRIES",
@@ -46,7 +45,7 @@ class DocsConfig(BaseSettings):
         le=10,
         description="Maximum number of retry attempts",
     )
-    
+
     rate_limit: float = Field(
         default=10.0,
         env="DOCS_RATE_LIMIT",
@@ -54,41 +53,41 @@ class DocsConfig(BaseSettings):
         le=100.0,
         description="Maximum requests per second",
     )
-    
+
     # MCP Configuration
     server_name: str = Field(
         default="docs-mcp-server",
         env="DOCS_MCP_SERVER_NAME",
         description="Name of the MCP server",
     )
-    
+
     # Logging Configuration
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
         env="LOG_LEVEL",
         description="Logging level",
     )
-    
+
     log_format: str = Field(
         default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         env="LOG_FORMAT",
         description="Log message format",
     )
-    
+
     # Development/Debug
     debug: bool = Field(
         default=False,
         env="DEBUG",
         description="Enable debug mode",
     )
-    
+
     # Cache Configuration
     cache_enabled: bool = Field(
         default=True,
         env="DOCS_CACHE_ENABLED",
         description="Enable response caching",
     )
-    
+
     cache_ttl: int = Field(
         default=300,  # 5 minutes
         env="DOCS_CACHE_TTL",
@@ -96,15 +95,18 @@ class DocsConfig(BaseSettings):
         description="Cache time-to-live in seconds",
     )
 
-    @validator("base_url")
+    @field_validator("base_url", mode="after")
+    @classmethod
     def validate_base_url(cls, v: HttpUrl) -> HttpUrl:
         """Ensure base_url doesn't end with a slash."""
         url_str = str(v)
         if url_str.endswith("/"):
             url_str = url_str.rstrip("/")
-        return HttpUrl(url_str, scheme=v.scheme)
+            return HttpUrl(url_str)
+        return v
 
-    @validator("api_token")
+    @field_validator("api_token", mode="after")
+    @classmethod
     def validate_api_token(cls, v: str) -> str:
         """Validate API token format."""
         if not v or len(v) < 10:
@@ -114,24 +116,25 @@ class DocsConfig(BaseSettings):
     @property
     def api_base_url(self) -> str:
         """Get the full API base URL."""
-        return f"{self.base_url}/api/{self.api_version}"
-    
+        # Remove trailing slash from base_url if present
+        base = str(self.base_url).rstrip("/")
+        return f"{base}/api/{self.api_version}"
+
     @property
     def auth_headers(self) -> dict[str, str]:
         """Get authentication headers."""
         return {
-            "Authorization": f"Bearer {self.api_token}",
+            "Authorization": f"Token {self.api_token}",
             "Content-Type": "application/json",
             "User-Agent": f"{self.server_name}/0.1.0",
         }
 
-    class Config:
-        """Pydantic configuration."""
-        
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
-        validate_assignment = True
+    model_config = SettingsConfigDict(
+        case_sensitive=False,
+        validate_assignment=True,
+        extra="ignore",
+        env_prefix="",  # No prefix for environment variables
+    )
 
 
 def get_config() -> DocsConfig:
@@ -143,17 +146,15 @@ def load_config_from_file(config_path: Path) -> DocsConfig:
     """Load configuration from a specific file."""
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {config_path}")
-    
-    # Temporarily set the env file
-    original_env_file = DocsConfig.Config.env_file
-    DocsConfig.Config.env_file = str(config_path)
-    
-    try:
-        config = DocsConfig()
-    finally:
-        # Restore original env file
-        DocsConfig.Config.env_file = original_env_file
-    
+
+    # Load configuration from the specified file
+    from dotenv import load_dotenv
+
+    # Load the dotenv file
+    load_dotenv(config_path)
+
+    config = DocsConfig()
+
     return config
 
 
@@ -183,12 +184,12 @@ DEBUG=false
 DOCS_CACHE_ENABLED=true
 DOCS_CACHE_TTL=300
 '''
-    
+
     output_path.write_text(example_content, encoding="utf-8")
 
 
 # Global configuration instance
-_config: Optional[DocsConfig] = None
+_config: DocsConfig | None = None
 
 
 def get_global_config() -> DocsConfig:

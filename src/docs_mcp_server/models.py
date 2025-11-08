@@ -2,15 +2,15 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 
 class RoleChoice(str, Enum):
     """Available user roles in Docs."""
-    
+
     READER = "reader"
     EDITOR = "editor"
     ADMINISTRATOR = "administrator"
@@ -19,7 +19,7 @@ class RoleChoice(str, Enum):
 
 class LinkReachChoice(str, Enum):
     """Document link reach levels."""
-    
+
     RESTRICTED = "restricted"
     AUTHENTICATED = "authenticated"
     PUBLIC = "public"
@@ -27,14 +27,14 @@ class LinkReachChoice(str, Enum):
 
 class LinkRoleChoice(str, Enum):
     """Document link roles."""
-    
+
     READER = "reader"
     EDITOR = "editor"
 
 
 class MovePositionChoice(str, Enum):
     """Document move positions."""
-    
+
     FIRST_CHILD = "first-child"
     LAST_CHILD = "last-child"
     LEFT = "left"
@@ -43,92 +43,92 @@ class MovePositionChoice(str, Enum):
 
 class User(BaseModel):
     """User model."""
-    
+
     id: UUID
     email: str
-    full_name: Optional[str] = None
-    short_name: Optional[str] = None
-    language: Optional[str] = None
+    full_name: str | None = None
+    short_name: str | None = None
+    language: str | None = None
 
 
 class UserLight(BaseModel):
     """Lightweight user model with limited fields."""
-    
-    id: Optional[UUID] = None
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    short_name: Optional[str] = None
+
+    id: UUID | None = None
+    email: str | None = None
+    full_name: str | None = None
+    short_name: str | None = None
 
 
 class DocumentAccess(BaseModel):
     """Document access permissions model."""
-    
+
     id: UUID
-    user: Optional[User] = None
-    user_id: Optional[UUID] = None
-    team: Optional[str] = None
+    user: User | None = None
+    user_id: UUID | None = None
+    team: str | None = None
     role: RoleChoice
-    abilities: Dict[str, Any] = Field(default_factory=dict)
+    abilities: dict[str, Any] = Field(default_factory=dict)
 
 
 class DocumentAccessLight(BaseModel):
     """Lightweight document access model."""
-    
+
     id: UUID
-    user: Optional[UserLight] = None
-    team: Optional[str] = None
+    user: UserLight | None = None
+    team: str | None = None
     role: RoleChoice
-    abilities: Dict[str, Any] = Field(default_factory=dict)
+    abilities: dict[str, Any] = Field(default_factory=dict)
 
 
 class Invitation(BaseModel):
     """Document invitation model."""
-    
+
     id: UUID
     email: str
     role: RoleChoice
     document: UUID
-    issuer: Optional[User] = None
+    issuer: User | None = None
     is_expired: bool
     created_at: datetime
-    abilities: Dict[str, Any] = Field(default_factory=dict)
+    abilities: dict[str, Any] = Field(default_factory=dict)
 
 
 class BaseDocument(BaseModel):
     """Base document model with common fields."""
-    
+
     id: UUID
-    title: Optional[str] = None
+    title: str | None = None
     created_at: datetime
     updated_at: datetime
-    creator: Optional[User] = None
+    creator: User | UUID | str | None = None
     depth: int
     path: str
     link_reach: LinkReachChoice = LinkReachChoice.RESTRICTED
     link_role: LinkRoleChoice = LinkRoleChoice.READER
-    abilities: Dict[str, Any] = Field(default_factory=dict)
+    abilities: dict[str, Any] = Field(default_factory=dict)
 
 
 class ListDocument(BaseDocument):
     """Document model for list views."""
-    
-    excerpt: Optional[str] = None
+
+    excerpt: str | None = None
     is_favorite: bool = False
     nb_accesses_ancestors: int = 0
     nb_accesses_direct: int = 0
     numchild: int = 0
-    user_roles: List[RoleChoice] = Field(default_factory=list)
+    user_roles: list[RoleChoice] = Field(default_factory=list)
 
 
 class Document(ListDocument):
     """Full document model with content."""
-    
-    content: Optional[str] = None
+
+    content: str | None = None
 
 
 class DocumentVersion(BaseModel):
     """Document version information."""
-    
+
     version_id: str
     last_modified: datetime
     etag: str
@@ -137,8 +137,8 @@ class DocumentVersion(BaseModel):
 
 class DocumentVersionList(BaseModel):
     """List of document versions with pagination."""
-    
-    versions: List[DocumentVersion]
+
+    versions: list[DocumentVersion]
     count: int
     is_truncated: bool
     next_version_id_marker: str
@@ -146,86 +146,89 @@ class DocumentVersionList(BaseModel):
 
 class Template(BaseModel):
     """Template model."""
-    
+
     id: UUID
     title: str
-    description: Optional[str] = None
-    code: Optional[str] = None
-    css: Optional[str] = None
+    description: str | None = None
+    code: str | None = None
+    css: str | None = None
     is_public: bool = False
-    abilities: Dict[str, Any] = Field(default_factory=dict)
-    accesses: List[DocumentAccess] = Field(default_factory=list)
+    abilities: dict[str, Any] = Field(default_factory=dict)
+    accesses: list[DocumentAccess] = Field(default_factory=list)
 
 
 class PaginatedResponse(BaseModel):
     """Generic paginated response model."""
-    
+
     count: int
-    next: Optional[HttpUrl] = None
-    previous: Optional[HttpUrl] = None
-    results: List[Any]
+    next: HttpUrl | None = None
+    previous: HttpUrl | None = None
+    results: list[Any]
 
 
 class DocumentListResponse(BaseModel):
     """Paginated document list response."""
-    
+
     count: int
-    next: Optional[HttpUrl] = None
-    previous: Optional[HttpUrl] = None
-    results: List[ListDocument]
+    next: HttpUrl | None = None
+    previous: HttpUrl | None = None
+    results: list[ListDocument]
 
 
 class DocumentAccessListResponse(BaseModel):
     """Paginated document access list response."""
-    
+
     count: int
-    next: Optional[HttpUrl] = None
-    previous: Optional[HttpUrl] = None
-    results: List[DocumentAccess]
+    next: HttpUrl | None = None
+    previous: HttpUrl | None = None
+    results: list[DocumentAccess]
 
 
 class InvitationListResponse(BaseModel):
     """Paginated invitation list response."""
-    
+
     count: int
-    next: Optional[HttpUrl] = None
-    previous: Optional[HttpUrl] = None
-    results: List[Invitation]
+    next: HttpUrl | None = None
+    previous: HttpUrl | None = None
+    results: list[Invitation]
 
 
 class UserListResponse(BaseModel):
     """User search response."""
-    
-    results: List[User]
+
+    count: int | None = None
+    next: HttpUrl | None = None
+    previous: HttpUrl | None = None
+    results: list[User]
 
 
 class ErrorDetail(BaseModel):
     """API error detail model."""
-    
-    detail: Optional[str] = None
-    field_errors: Optional[Dict[str, List[str]]] = None
+
+    detail: str | None = None
+    field_errors: dict[str, list[str]] | None = None
 
 
 class APIError(BaseModel):
     """API error response model."""
-    
+
     error: str
     message: str
     status_code: int
-    details: Optional[Dict[str, Any]] = None
+    details: dict[str, Any] | None = None
 
 
 # Request models for creating/updating resources
 
 class DocumentCreateRequest(BaseModel):
     """Request model for creating a document."""
-    
-    title: str
-    content: Optional[str] = None
-    id: Optional[UUID] = None
-    language: Optional[str] = None
 
-    @validator("title")
+    title: str
+    content: str | None = None
+    id: UUID | None = None
+    language: str | None = None
+
+    @field_validator("title")
     def validate_title(cls, v: str) -> str:
         """Validate title is not empty."""
         if not v.strip():
@@ -235,12 +238,12 @@ class DocumentCreateRequest(BaseModel):
 
 class DocumentUpdateRequest(BaseModel):
     """Request model for updating a document."""
-    
-    title: Optional[str] = None
-    content: Optional[str] = None
 
-    @validator("title")
-    def validate_title(cls, v: Optional[str]) -> Optional[str]:
+    title: str | None = None
+    content: str | None = None
+
+    @field_validator("title")
+    def validate_title(cls, v: str | None) -> str | None:
         """Validate title if provided."""
         if v is not None and not v.strip():
             raise ValueError("Title cannot be empty")
@@ -249,26 +252,26 @@ class DocumentUpdateRequest(BaseModel):
 
 class DocumentMoveRequest(BaseModel):
     """Request model for moving a document."""
-    
+
     target_document_id: UUID
     position: MovePositionChoice = MovePositionChoice.LAST_CHILD
 
 
 class DocumentDuplicateRequest(BaseModel):
     """Request model for duplicating a document."""
-    
+
     with_accesses: bool = False
 
 
 class DocumentAccessCreateRequest(BaseModel):
     """Request model for creating document access."""
-    
-    user_id: Optional[UUID] = None
-    user_email: Optional[str] = None
+
+    user_id: UUID | None = None
+    user_email: str | None = None
     role: RoleChoice
 
-    @validator("user_email")
-    def validate_user_email(cls, v: Optional[str]) -> Optional[str]:
+    @field_validator("user_email")
+    def validate_user_email(cls, v: str | None) -> str | None:
         """Validate email format if provided."""
         if v and "@" not in v:
             raise ValueError("Invalid email address")
@@ -277,17 +280,17 @@ class DocumentAccessCreateRequest(BaseModel):
 
 class DocumentAccessUpdateRequest(BaseModel):
     """Request model for updating document access."""
-    
+
     role: RoleChoice
 
 
 class InvitationCreateRequest(BaseModel):
     """Request model for creating an invitation."""
-    
+
     email: str
     role: RoleChoice
 
-    @validator("email")
+    @field_validator("email")
     def validate_email(cls, v: str) -> str:
         """Validate email format."""
         if "@" not in v:
@@ -297,18 +300,18 @@ class InvitationCreateRequest(BaseModel):
 
 class LinkConfigurationRequest(BaseModel):
     """Request model for updating document link configuration."""
-    
+
     link_reach: LinkReachChoice
     link_role: LinkRoleChoice
 
 
 class AITransformRequest(BaseModel):
     """Request model for AI text transformation."""
-    
+
     text: str
     action: str  # prompt, correct, rephrase, summarize
 
-    @validator("text")
+    @field_validator("text")
     def validate_text(cls, v: str) -> str:
         """Validate text is not empty."""
         if not v.strip():
@@ -318,11 +321,11 @@ class AITransformRequest(BaseModel):
 
 class AITranslateRequest(BaseModel):
     """Request model for AI text translation."""
-    
+
     text: str
     language: str
 
-    @validator("text")
+    @field_validator("text")
     def validate_text(cls, v: str) -> str:
         """Validate text is not empty."""
         if not v.strip():
@@ -334,59 +337,55 @@ class AITranslateRequest(BaseModel):
 
 class DocumentCreateResponse(BaseModel):
     """Response model for document creation."""
-    
+
     id: UUID
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class DocumentMoveResponse(BaseModel):
     """Response model for document move operation."""
-    
+
     message: str
 
 
 class DocumentRestoreResponse(BaseModel):
     """Response model for document restore operation."""
-    
+
     detail: str
 
 
 class DocumentDuplicateResponse(BaseModel):
     """Response model for document duplication."""
-    
+
     id: UUID
 
 
 class AITransformResponse(BaseModel):
     """Response model for AI transformation."""
-    
-    text: str
-    original_text: str
-    action: str
+
+    answer: str
 
 
 class AITranslateResponse(BaseModel):
     """Response model for AI translation."""
-    
-    text: str
-    original_text: str
-    language: str
+
+    answer: str
 
 
 class FavoriteResponse(BaseModel):
     """Response model for favorite operations."""
-    
+
     detail: str
 
 
 class FileUploadResponse(BaseModel):
     """Response model for file upload."""
-    
+
     file: str  # URL to the uploaded file
 
 
 class MediaCheckResponse(BaseModel):
     """Response model for media check."""
-    
+
     status: str
-    file: Optional[str] = None
+    file: str | None = None

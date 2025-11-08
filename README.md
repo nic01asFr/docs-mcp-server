@@ -1,10 +1,10 @@
-# DINUM Docs MCP Server
+# Docs MCP Server
 
 <div align="center">
 
-**🚀 Professional MCP Server for DINUM Docs**
+**🚀 Professional MCP Server for Docs**
 
-*Complete API integration with 25+ tools and 4 resources for seamless Claude integration*
+*Complete API integration with 31 tools including document content editing via Yjs*
 
 [![PyPI version](https://badge.fury.io/py/docs-mcp-server.svg)](https://badge.fury.io/py/docs-mcp-server)
 [![Python Support](https://img.shields.io/pypi/pyversions/docs-mcp-server.svg)](https://pypi.org/project/docs-mcp-server/)
@@ -25,16 +25,23 @@
 
 ---
 
-The **DINUM Docs MCP Server** provides seamless integration between Claude and [DINUM Docs](https://docs.fr) instances through the Model Context Protocol (MCP). It enables Claude to interact with collaborative documents, manage access permissions, and leverage AI-powered features directly within the DINUM Docs ecosystem.
+The **Docs MCP Server** provides seamless integration between Claude and [Docs](https://docs.fr) instances through the Model Context Protocol (MCP). It enables Claude to interact with collaborative documents, manage access permissions, and leverage AI-powered features directly within the Docs ecosystem.
 
 ## ✨ Key Features
 
 ### 📝 **Complete Document Management**
 - 📄 Create, read, update, and delete documents
-- 🌳 Navigate hierarchical document structures  
+- 🌳 Navigate hierarchical document structures
 - ↔️ Move and reorganize documents in trees
 - 📋 Duplicate documents with or without permissions
 - ⭐ Manage favorites and restore from trashbin
+
+### ✏️ **Document Content Editing** *(NEW in v0.2.0)*
+- 📖 Read document content as plain text
+- ✍️ Update documents with text or markdown
+- 🔄 Apply AI transformations directly to documents
+- 🌍 Translate document content automatically
+- 🔧 Yjs (CRDT) format support for collaborative editing
 
 ### 👥 **Advanced Access Control**
 - 🔐 Grant and revoke user permissions (reader, editor, administrator, owner)
@@ -54,10 +61,11 @@ The **DINUM Docs MCP Server** provides seamless integration between Claude and [
 - 📊 Track changes over time
 
 ### 🔌 **MCP Integration**
-- **25+ Tools**: Comprehensive set of operations
+- **31 Tools**: Comprehensive set of operations including content editing
 - **4 Resources**: Real-time data access
 - **Type Safety**: Full TypeScript-style type hints
 - **Error Handling**: Robust error management
+- **Yjs Support**: Native collaborative document format
 
 ## 🚀 Installation
 
@@ -166,6 +174,18 @@ if __name__ == \"__main__\":
 | `docs_update_document` | Update document title and content |
 | `docs_delete_document` | Soft delete documents |
 | `docs_restore_document` | Restore deleted documents |
+
+</details>
+
+<details>
+<summary><strong>✏️ Document Content Editing (4 tools)</strong></summary>
+
+| Tool | Description |
+|------|-------------|
+| `docs_get_content_text` | Read document content as plain text |
+| `docs_update_content` | Update document with text or markdown |
+| `docs_apply_ai_transform` | Apply AI transformation and save to document |
+| `docs_apply_ai_translate` | Translate and save document content |
 
 </details>
 
@@ -401,15 +421,14 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 ## 🙏 Acknowledgments
 
 - [Model Context Protocol](https://github.com/modelcontextprotocol) for the MCP specification
-- [DINUM](https://www.numerique.gouv.fr/) for the Docs platform
-- [Anthropic](https://www.anthropic.com/) for Claude and MCP support
+- [La Suite Numérique](https://lasuite.numerique.gouv.fr/) and the DINUM team for creating the Docs platform
 - All contributors and users of this project
 
 ---
 
 <div align=\"center\">
 
-**Made with ❤️ by the DINUM Team for the French public sector**
+**Made with ❤️ by Nicolas LAVAL**
 
 *Enabling seamless AI integration with collaborative documentation*
 

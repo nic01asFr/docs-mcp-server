@@ -1,76 +1,74 @@
-"""Professional MCP Server for DINUM Docs."""
+"""Professional MCP Server for Docs."""
 import json
 import logging
-from typing import Any, Dict, List, Optional, Sequence
-from uuid import UUID
+from typing import Any
 
-from mcp.server import Server, NotificationOptions
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
 from mcp.types import (
     Resource,
-    Tool,
     TextContent,
-    CallToolRequest,
-    CallToolResult,
-    ListResourcesRequest,
-    ListResourcesResult,
-    ListToolsRequest,
-    ListToolsResult,
-    ReadResourceRequest,
-    ReadResourceResult,
+    Tool,
 )
 
 from .client import DocsAPIClient
-from .config import DocsConfig, get_global_config
+from .config import DocsConfig
 from .exceptions import DocsError
 
 logger = logging.getLogger(__name__)
 
 
-class DocsServer:
-    """Professional MCP Server for DINUM Docs."""
+# Global config for use in handlers
+_global_config: DocsConfig | None = None
+
+
+def create_server(
+    base_url: str | None = None,
+    token: str | None = None,
+    config: DocsConfig | None = None,
+    server_name: str = "docs-mcp-server",
+) -> Server:
+    """Create and configure MCP server for Docs.
     
-    def __init__(
-        self,
-        base_url: Optional[str] = None,
-        token: Optional[str] = None,
-        config: Optional[DocsConfig] = None,
-        server_name: str = "docs-mcp-server",
-    ) -> None:
-        """Initialize the Docs MCP Server.
+    Args:
+        base_url: Base URL of the Docs instance
+        token: Authentication token
+        config: Configuration object
+        server_name: Name of the MCP server
         
-        Args:
-            base_url: Base URL of the Docs instance
-            token: Authentication token
-            config: Configuration object
-            server_name: Name of the MCP server
-        """
-        self.config = config or (
-            DocsConfig() if not base_url and not token
-            else self._create_config(base_url, token)
-        )
-        
-        # Initialize MCP server
-        self.server = Server(server_name)
-        
-        # Register handlers
-        self.server.list_tools = self.list_tools
-        self.server.call_tool = self.call_tool
-        self.server.list_resources = self.list_resources
-        self.server.read_resource = self.read_resource
+    Returns:
+        Configured MCP Server instance
+    """
+    global _global_config
 
-    def _create_config(self, base_url: Optional[str], token: Optional[str]) -> DocsConfig:
-        """Create config from parameters."""
-        if not base_url or not token:
-            raise ValueError("Both base_url and token are required")
-        
-        import os
-        os.environ["DOCS_BASE_URL"] = base_url
-        os.environ["DOCS_API_TOKEN"] = token
-        return DocsConfig()
+    # Setup configuration
+    import sys
+    try:
+        if config:
+            _global_config = config
+        elif base_url or token:
+            import os
+            if base_url:
+                os.environ["DOCS_BASE_URL"] = base_url
+            if token:
+                os.environ["DOCS_API_TOKEN"] = token
+            _global_config = DocsConfig()
+        else:
+            _global_config = DocsConfig()
+    except Exception as e:
+        # Send error to stderr, not stdout (to avoid breaking MCP protocol)
+        print(f"ERROR: Failed to load configuration: {e}", file=sys.stderr)
+        print("Please set DOCS_BASE_URL and DOCS_API_TOKEN environment variables", file=sys.stderr)
+        sys.exit(1)
 
-    async def list_tools(self, request: ListToolsRequest) -> ListToolsResult:
+    # Initialize MCP server
+    server = Server(server_name)
+
+    # Register tools handler
+    @server.list_tools()
+    async def list_tools() -> list[Tool]:
         """List all available MCP tools."""
-        tools = [
+        return [
             # Document CRUD
             Tool(
                 name="docs_list_documents",
@@ -83,7 +81,7 @@ class DocsServer:
                             "description": "Filter by documents created by current user"
                         },
                         "is_favorite": {
-                            "type": "boolean", 
+                            "type": "boolean",
                             "description": "Filter by favorite documents"
                         },
                         "title": {
@@ -99,7 +97,7 @@ class DocsServer:
                             "description": "Page number for pagination"
                         },
                         "page_size": {
-                            "type": "integer", 
+                            "type": "integer",
                             "description": "Number of documents per page"
                         }
                     }
@@ -191,7 +189,7 @@ class DocsServer:
                     "required": ["document_id"]
                 }
             ),
-            
+
             # Document tree operations
             Tool(
                 name="docs_move_document",
@@ -264,7 +262,7 @@ class DocsServer:
                     "required": ["document_id"]
                 }
             ),
-            
+
             # Access management
             Tool(
                 name="docs_list_accesses",
@@ -345,7 +343,7 @@ class DocsServer:
                     "required": ["document_id", "access_id"]
                 }
             ),
-            
+
             # Invitations
             Tool(
                 name="docs_invite_user",
@@ -403,7 +401,7 @@ class DocsServer:
                     "required": ["document_id", "invitation_id"]
                 }
             ),
-            
+
             # User search
             Tool(
                 name="docs_search_users",
@@ -431,7 +429,7 @@ class DocsServer:
                     "properties": {}
                 }
             ),
-            
+
             # Favorites
             Tool(
                 name="docs_add_favorite",
@@ -469,7 +467,7 @@ class DocsServer:
                     "properties": {}
                 }
             ),
-            
+
             # Trashbin
             Tool(
                 name="docs_list_trashbin",
@@ -479,7 +477,7 @@ class DocsServer:
                     "properties": {}
                 }
             ),
-            
+
             # Versions
             Tool(
                 name="docs_list_versions",
@@ -518,7 +516,7 @@ class DocsServer:
                     "required": ["document_id", "version_id"]
                 }
             ),
-            
+
             # AI features (if enabled on the Docs instance)
             Tool(
                 name="docs_ai_transform",
@@ -565,202 +563,309 @@ class DocsServer:
                     "required": ["document_id", "text", "language"]
                 }
             ),
+            # Content editing with Yjs
+            Tool(
+                name="docs_get_content_text",
+                description="Get document content as plain text. Extracts text from Yjs document format. Useful for reading documents before editing.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "document_id": {
+                            "type": "string",
+                            "description": "UUID of the document to read"
+                        }
+                    },
+                    "required": ["document_id"]
+                }
+            ),
+            Tool(
+                name="docs_update_content",
+                description="Update document content with text or markdown. Converts content to Yjs format and updates the document. This is the primary method for editing document content.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "document_id": {
+                            "type": "string",
+                            "description": "UUID of the document to update"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "New content for the document"
+                        },
+                        "format": {
+                            "type": "string",
+                            "enum": ["text", "markdown"],
+                            "description": "Content format: 'text' for plain text or 'markdown' for markdown (default: 'text')",
+                            "default": "text"
+                        }
+                    },
+                    "required": ["document_id", "content"]
+                }
+            ),
+            Tool(
+                name="docs_apply_ai_transform",
+                description="Apply AI transformation directly to document content and update it. Reads current content, applies AI transformation, and saves result. Actions: correct, rephrase, summarize, prompt, beautify, emojify.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "document_id": {
+                            "type": "string",
+                            "description": "UUID of the document to transform"
+                        },
+                        "action": {
+                            "type": "string",
+                            "enum": ["correct", "rephrase", "summarize", "prompt", "beautify", "emojify"],
+                            "description": "AI transformation action to apply"
+                        },
+                        "text": {
+                            "type": "string",
+                            "description": "Specific text to transform (optional, if not provided uses current document content)"
+                        }
+                    },
+                    "required": ["document_id", "action"]
+                }
+            ),
+            Tool(
+                name="docs_apply_ai_translate",
+                description="Apply AI translation directly to document content and update it. Reads current content, translates it, and saves result.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "document_id": {
+                            "type": "string",
+                            "description": "UUID of the document to translate"
+                        },
+                        "language": {
+                            "type": "string",
+                            "description": "Target language code (e.g., 'fr', 'en', 'es', 'de', 'it', 'pt')"
+                        },
+                        "text": {
+                            "type": "string",
+                            "description": "Specific text to translate (optional, if not provided uses current document content)"
+                        }
+                    },
+                    "required": ["document_id", "language"]
+                }
+            ),
         ]
-        
-        return ListToolsResult(tools=tools)
 
-    async def call_tool(self, request: CallToolRequest) -> CallToolResult:
+    # Register call tool handler
+    @server.call_tool()
+    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         """Execute a tool request."""
         try:
-            async with DocsAPIClient(config=self.config) as client:
-                tool_name = request.params.name
-                args = request.params.arguments or {}
-                
-                logger.debug(f"Executing tool: {tool_name} with args: {args}")
-                
+            async with DocsAPIClient(config=_global_config) as client:
+                logger.debug(f"Executing tool: {name} with args: {arguments}")
+
                 # Document CRUD operations
-                if tool_name == "docs_list_documents":
-                    result = await client.list_documents(args)
-                    
-                elif tool_name == "docs_get_document":
-                    result = await client.get_document(args["document_id"])
-                    
-                elif tool_name == "docs_create_document":
+                if name == "docs_list_documents":
+                    result = await client.list_documents(arguments)
+
+                elif name == "docs_get_document":
+                    result = await client.get_document(arguments["document_id"])
+
+                elif name == "docs_create_document":
                     result = await client.create_document(
-                        title=args["title"],
-                        content=args.get("content"),
-                        parent_id=args.get("parent_id"),
+                        title=arguments["title"],
+                        content=arguments.get("content"),
+                        parent_id=arguments.get("parent_id"),
                     )
-                    
-                elif tool_name == "docs_update_document":
+
+                elif name == "docs_update_document":
                     result = await client.update_document(
-                        document_id=args["document_id"],
-                        title=args.get("title"),
-                        content=args.get("content"),
+                        document_id=arguments["document_id"],
+                        title=arguments.get("title"),
+                        content=arguments.get("content"),
                     )
-                    
-                elif tool_name == "docs_delete_document":
-                    result = await client.delete_document(args["document_id"])
-                    
-                elif tool_name == "docs_restore_document":
-                    result = await client.restore_document(args["document_id"])
-                    
+
+                elif name == "docs_delete_document":
+                    result = await client.delete_document(arguments["document_id"])
+
+                elif name == "docs_restore_document":
+                    result = await client.restore_document(arguments["document_id"])
+
                 # Tree operations
-                elif tool_name == "docs_move_document":
+                elif name == "docs_move_document":
                     result = await client.move_document(
-                        document_id=args["document_id"],
-                        target_id=args["target_id"],
-                        position=args.get("position", "last-child"),
+                        document_id=arguments["document_id"],
+                        target_id=arguments["target_id"],
+                        position=arguments.get("position", "last-child"),
                     )
-                    
-                elif tool_name == "docs_duplicate_document":
+
+                elif name == "docs_duplicate_document":
                     result = await client.duplicate_document(
-                        document_id=args["document_id"],
-                        with_accesses=args.get("with_accesses", False),
+                        document_id=arguments["document_id"],
+                        with_accesses=arguments.get("with_accesses", False),
                     )
-                    
-                elif tool_name == "docs_get_children":
-                    result = await client.get_children(args["document_id"])
-                    
-                elif tool_name == "docs_get_tree":
-                    result = await client.get_tree(args["document_id"])
-                    
+
+                elif name == "docs_get_children":
+                    result = await client.get_children(arguments["document_id"])
+
+                elif name == "docs_get_tree":
+                    result = await client.get_tree(arguments["document_id"])
+
                 # Access management
-                elif tool_name == "docs_list_accesses":
-                    result = await client.list_accesses(args["document_id"])
-                    
-                elif tool_name == "docs_grant_access":
+                elif name == "docs_list_accesses":
+                    result = await client.list_accesses(arguments["document_id"])
+
+                elif name == "docs_grant_access":
                     result = await client.grant_access(
-                        document_id=args["document_id"],
-                        user_email=args["user_email"],
-                        role=args.get("role", "reader"),
+                        document_id=arguments["document_id"],
+                        user_email=arguments["user_email"],
+                        role=arguments.get("role", "reader"),
                     )
-                    
-                elif tool_name == "docs_update_access":
+
+                elif name == "docs_update_access":
                     result = await client.update_access(
-                        document_id=args["document_id"],
-                        access_id=args["access_id"],
-                        role=args["role"],
+                        document_id=arguments["document_id"],
+                        access_id=arguments["access_id"],
+                        role=arguments["role"],
                     )
-                    
-                elif tool_name == "docs_revoke_access":
+
+                elif name == "docs_revoke_access":
                     result = await client.revoke_access(
-                        document_id=args["document_id"],
-                        access_id=args["access_id"],
+                        document_id=arguments["document_id"],
+                        access_id=arguments["access_id"],
                     )
-                    
+
                 # Invitations
-                elif tool_name == "docs_invite_user":
+                elif name == "docs_invite_user":
                     result = await client.create_invitation(
-                        document_id=args["document_id"],
-                        email=args["email"],
-                        role=args.get("role", "reader"),
+                        document_id=arguments["document_id"],
+                        email=arguments["email"],
+                        role=arguments.get("role", "reader"),
                     )
-                    
-                elif tool_name == "docs_list_invitations":
-                    result = await client.list_invitations(args["document_id"])
-                    
-                elif tool_name == "docs_cancel_invitation":
+
+                elif name == "docs_list_invitations":
+                    result = await client.list_invitations(arguments["document_id"])
+
+                elif name == "docs_cancel_invitation":
                     result = await client.delete_invitation(
-                        document_id=args["document_id"],
-                        invitation_id=args["invitation_id"],
+                        document_id=arguments["document_id"],
+                        invitation_id=arguments["invitation_id"],
                     )
-                    
+
                 # User operations
-                elif tool_name == "docs_search_users":
+                elif name == "docs_search_users":
                     result = await client.search_users(
-                        query=args["query"],
-                        document_id=args.get("document_id"),
+                        query=arguments["query"],
+                        document_id=arguments.get("document_id"),
                     )
-                    
-                elif tool_name == "docs_get_current_user":
+
+                elif name == "docs_get_current_user":
                     result = await client.get_current_user()
-                    
+
                 # Favorites
-                elif tool_name == "docs_add_favorite":
-                    result = await client.add_favorite(args["document_id"])
-                    
-                elif tool_name == "docs_remove_favorite":
-                    result = await client.remove_favorite(args["document_id"])
-                    
-                elif tool_name == "docs_list_favorites":
+                elif name == "docs_add_favorite":
+                    result = await client.add_favorite(arguments["document_id"])
+
+                elif name == "docs_remove_favorite":
+                    result = await client.remove_favorite(arguments["document_id"])
+
+                elif name == "docs_list_favorites":
                     result = await client.list_favorites()
-                    
+
                 # Trashbin
-                elif tool_name == "docs_list_trashbin":
+                elif name == "docs_list_trashbin":
                     result = await client.list_trashbin()
-                    
+
                 # Versions
-                elif tool_name == "docs_list_versions":
+                elif name == "docs_list_versions":
                     result = await client.list_versions(
-                        document_id=args["document_id"],
-                        page_size=args.get("page_size", 20),
+                        document_id=arguments["document_id"],
+                        page_size=arguments.get("page_size", 20),
                     )
-                    
-                elif tool_name == "docs_get_version":
+
+                elif name == "docs_get_version":
                     result = await client.get_version(
-                        document_id=args["document_id"],
-                        version_id=args["version_id"],
+                        document_id=arguments["document_id"],
+                        version_id=arguments["version_id"],
                     )
-                    
+
                 # AI features
-                elif tool_name == "docs_ai_transform":
+                elif name == "docs_ai_transform":
                     result = await client.ai_transform(
-                        document_id=args["document_id"],
-                        text=args["text"],
-                        action=args["action"],
+                        document_id=arguments["document_id"],
+                        text=arguments["text"],
+                        action=arguments["action"],
                     )
-                    
-                elif tool_name == "docs_ai_translate":
+
+                elif name == "docs_ai_translate":
                     result = await client.ai_translate(
-                        document_id=args["document_id"],
-                        text=args["text"],
-                        language=args["language"],
+                        document_id=arguments["document_id"],
+                        text=arguments["text"],
+                        language=arguments["language"],
                     )
-                    
+
+                # Content editing with Yjs
+                elif name == "docs_get_content_text":
+                    result = await client.get_content_text(arguments["document_id"])
+                    # Return plain text directly
+                    return [TextContent(
+                        type="text",
+                        text=result
+                    )]
+
+                elif name == "docs_update_content":
+                    result = await client.update_content(
+                        document_id=arguments["document_id"],
+                        content=arguments["content"],
+                        format=arguments.get("format", "text"),
+                    )
+
+                elif name == "docs_apply_ai_transform":
+                    result = await client.apply_ai_transform_to_content(
+                        document_id=arguments["document_id"],
+                        action=arguments["action"],
+                        text=arguments.get("text"),
+                    )
+
+                elif name == "docs_apply_ai_translate":
+                    result = await client.apply_ai_translate_to_content(
+                        document_id=arguments["document_id"],
+                        language=arguments["language"],
+                        text=arguments.get("text"),
+                    )
+
                 else:
-                    return CallToolResult(
-                        content=[TextContent(
-                            type="text",
-                            text=f"Unknown tool: {tool_name}"
-                        )]
-                    )
-                
+                    return [TextContent(
+                        type="text",
+                        text=f"Unknown tool: {name}"
+                    )]
+
                 # Convert result to JSON for response
                 if hasattr(result, 'dict'):
                     response_data = result.dict()
+                elif hasattr(result, 'model_dump'):
+                    response_data = result.model_dump()
                 elif hasattr(result, '__dict__'):
                     response_data = result.__dict__
                 else:
                     response_data = result
-                
-                return CallToolResult(
-                    content=[TextContent(
-                        type="text",
-                        text=json.dumps(response_data, indent=2, default=str, ensure_ascii=False)
-                    )]
-                )
-                
-        except DocsError as e:
-            logger.error(f"Docs error in {tool_name}: {e}")
-            return CallToolResult(
-                content=[TextContent(
-                    type="text",
-                    text=f"Error: {e.message}"
-                )]
-            )
-        except Exception as e:
-            logger.error(f"Unexpected error in {tool_name}: {e}")
-            return CallToolResult(
-                content=[TextContent(
-                    type="text",
-                    text=f"Unexpected error: {str(e)}"
-                )]
-            )
 
-    async def list_resources(self, request: ListResourcesRequest) -> ListResourcesResult:
+                return [TextContent(
+                    type="text",
+                    text=json.dumps(response_data, indent=2, default=str, ensure_ascii=False)
+                )]
+
+        except DocsError as e:
+            logger.error(f"Docs error in {name}: {e}")
+            return [TextContent(
+                type="text",
+                text=f"Error: {e.message}"
+            )]
+        except Exception as e:
+            logger.error(f"Unexpected error in {name}: {e}", exc_info=True)
+            return [TextContent(
+                type="text",
+                text=f"Unexpected error: {e!s}"
+            )]
+
+    # Register resources handler
+    @server.list_resources()
+    async def list_resources() -> list[Resource]:
         """List available MCP resources."""
-        resources = [
+        return [
             Resource(
                 uri="docs://documents",
                 name="All Documents",
@@ -768,7 +873,7 @@ class DocsServer:
                 mimeType="application/json"
             ),
             Resource(
-                uri="docs://favorites", 
+                uri="docs://favorites",
                 name="Favorite Documents",
                 description="List of documents marked as favorites",
                 mimeType="application/json"
@@ -786,64 +891,93 @@ class DocsServer:
                 mimeType="application/json"
             ),
         ]
-        
-        return ListResourcesResult(resources=resources)
 
-    async def read_resource(self, request: ReadResourceRequest) -> ReadResourceResult:
+    # Register read resource handler
+    @server.read_resource()
+    async def read_resource(uri: str) -> str:
         """Read a specific MCP resource."""
         try:
-            async with DocsAPIClient(config=self.config) as client:
-                
-                if request.uri == "docs://documents":
+            async with DocsAPIClient(config=_global_config) as client:
+
+                if uri == "docs://documents":
                     result = await client.list_documents()
-                elif request.uri == "docs://favorites":
+                elif uri == "docs://favorites":
                     result = await client.list_favorites()
-                elif request.uri == "docs://trashbin":
+                elif uri == "docs://trashbin":
                     result = await client.list_trashbin()
-                elif request.uri == "docs://user":
+                elif uri == "docs://user":
                     result = await client.get_current_user()
                 else:
-                    return ReadResourceResult(
-                        contents=[TextContent(
-                            type="text",
-                            text=f"Unknown resource: {request.uri}"
-                        )]
-                    )
-                
+                    return f"Unknown resource: {uri}"
+
                 # Convert result to JSON
                 if hasattr(result, 'dict'):
                     response_data = result.dict()
+                elif hasattr(result, 'model_dump'):
+                    response_data = result.model_dump()
                 elif hasattr(result, '__dict__'):
                     response_data = result.__dict__
                 else:
                     response_data = result
-                
-                return ReadResourceResult(
-                    contents=[TextContent(
-                        type="text",
-                        text=json.dumps(response_data, indent=2, default=str, ensure_ascii=False)
-                    )]
-                )
-                
+
+                return json.dumps(response_data, indent=2, default=str, ensure_ascii=False)
+
         except DocsError as e:
-            logger.error(f"Docs error reading resource {request.uri}: {e}")
-            return ReadResourceResult(
-                contents=[TextContent(
-                    type="text",
-                    text=f"Error: {e.message}"
-                )]
-            )
+            logger.error(f"Docs error reading resource {uri}: {e}")
+            return f"Error: {e.message}"
         except Exception as e:
-            logger.error(f"Unexpected error reading resource {request.uri}: {e}")
-            return ReadResourceResult(
-                contents=[TextContent(
-                    type="text",
-                    text=f"Unexpected error: {str(e)}"
-                )]
-            )
+            logger.error(f"Unexpected error reading resource {uri}: {e}", exc_info=True)
+            return f"Unexpected error: {e!s}"
+
+    return server
+
+
+class DocsServer:
+    """Professional MCP Server for Docs (wrapper class for compatibility)."""
+
+    def __init__(
+        self,
+        base_url: str | None = None,
+        token: str | None = None,
+        config: DocsConfig | None = None,
+        server_name: str = "docs-mcp-server",
+    ) -> None:
+        """Initialize the Docs MCP Server.
+        
+        Args:
+            base_url: Base URL of the Docs instance
+            token: Authentication token
+            config: Configuration object
+            server_name: Name of the MCP server
+        """
+        if config:
+            self.config = config
+        elif base_url or token:
+            import os
+            if base_url:
+                os.environ["DOCS_BASE_URL"] = base_url
+            if token:
+                os.environ["DOCS_API_TOKEN"] = token
+            self.config = DocsConfig()
+        else:
+            self.config = DocsConfig()
+
+        self.server_name = server_name
+        self.server = create_server(
+            base_url=base_url,
+            token=token,
+            config=self.config,
+            server_name=server_name
+        )
 
     async def run(self) -> None:
-        """Run the MCP server."""
+        """Run the MCP server with stdio transport."""
         logger.info(f"Starting Docs MCP Server for {self.config.base_url}")
-        async with self.server:
-            await self.server.run()
+
+        # Run server with stdio transport
+        async with stdio_server() as (read_stream, write_stream):
+            await self.server.run(
+                read_stream,
+                write_stream,
+                self.server.create_initialization_options()
+            )
