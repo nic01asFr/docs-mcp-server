@@ -83,13 +83,6 @@ cd docs-mcp-server
 pip install -e \".[dev]\"
 ```
 
-### Using Docker
-
-```bash
-docker pull ghcr.io/nic01asfr/docs-mcp-server:latest
-docker run -e DOCS_BASE_URL=\"https://your-docs.com\" -e DOCS_API_TOKEN=\"your-token\" ghcr.io/nic01asfr/docs-mcp-server:latest
-```
-
 ## ⚙️ Configuration
 
 ### Environment Variables
@@ -382,9 +375,8 @@ mkdocs build
 - 📋 Comprehensive security documentation
 
 ### 🚀 **CI/CD**
-- 🔄 Automated testing on multiple Python versions (3.8-3.12)
+- 🔄 Automated testing on multiple Python versions (3.10-3.12)
 - 📦 Automated PyPI publishing on releases
-- 🐳 Docker image building and publishing
 - 🔍 Security vulnerability scanning
 - 📈 Performance regression testing
 
@@ -402,7 +394,6 @@ mkdocs build
 - 🐙 [GitHub Repository](https://github.com/nic01asFr/docs-mcp-server)
 - 🐛 [Issue Tracker](https://github.com/nic01asFr/docs-mcp-server/issues)
 - 💬 [Discussions](https://github.com/nic01asFr/docs-mcp-server/discussions)
-- 🐳 [Docker Images](https://ghcr.io/nic01asfr/docs-mcp-server)
 
 ## 📄 License
 
