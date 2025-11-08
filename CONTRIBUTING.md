@@ -1,14 +1,14 @@
-# Contributing to DINUM Docs MCP Server
+# Contributing to Docs MCP Server
 
-We welcome contributions to the DINUM Docs MCP Server! This document provides guidelines for contributing to the project.
+We welcome contributions to the Docs MCP Server! This document provides guidelines for contributing to the project.
 
 ## Development Setup
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - Git
-- Access to a DINUM Docs instance for testing
+- Access to a Docs instance for testing
 
 ### Setup
 
@@ -158,7 +158,7 @@ When reporting bugs, please include:
 
 - Python version
 - Package version
-- DINUM Docs instance version (if known)
+- Docs instance version (if known)
 - Steps to reproduce
 - Expected vs actual behavior
 - Error messages and stack traces

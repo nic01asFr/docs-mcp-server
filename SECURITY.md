@@ -88,7 +88,7 @@ We commit to:
 
 ### Authentication
 
-- **API Token Authentication**: Secure token-based authentication with DINUM Docs instances
+- **API Token Authentication**: Secure token-based authentication with Docs instances
 - **Environment Variable Configuration**: Sensitive data stored in environment variables
 - **Request Timeout**: Configurable timeouts to prevent hanging connections
 
@@ -108,14 +108,14 @@ We commit to:
 
 ### API Token Management
 
-- API tokens provide full access to your DINUM Docs instance
+- API tokens provide full access to your Docs instance
 - Treat tokens like passwords
 - Use different tokens for different environments
 - Revoke unused tokens
 
 ### Network Environment
 
-- Ensure secure network connectivity to DINUM Docs instances
+- Ensure secure network connectivity to Docs instances
 - Consider using VPN for sensitive environments
 - Monitor network traffic for anomalies
 

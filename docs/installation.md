@@ -16,8 +16,8 @@ pip install -e ".[dev]"
 
 ## Requirements
 
-- Python 3.8+
-- Access to a DINUM Docs instance
+- Python 3.10+
+- Access to a Docs instance
 - API token for authentication
 
 ## Configuration

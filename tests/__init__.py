@@ -1,1 +1,1 @@
-"""Test suite for DINUM Docs MCP Server."""
+"""Test suite for Docs MCP Server."""

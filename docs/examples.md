@@ -454,4 +454,4 @@ async def batch_access_management(document_ids, user_emails):
         print(f"Granted {len(successful)} accesses, {len(failed)} failed")
 ```
 
-These examples demonstrate the full range of capabilities provided by the DINUM Docs MCP Server, from basic document operations to advanced AI features and robust error handling.
+These examples demonstrate the full range of capabilities provided by the Docs MCP Server, from basic document operations to advanced AI features and robust error handling.
