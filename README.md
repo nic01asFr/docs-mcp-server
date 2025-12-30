@@ -3,7 +3,7 @@
 # Docs MCP Server
 <div align="center">
 
-**🚀 Professional MCP Server for Docs**
+**🚀 MCP Server for Docs**
 
 *Complete API integration with 31 tools including document content editing via Yjs*
 
@@ -420,7 +420,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 <div align=\"center\">
 
-**Made with ❤️ by Nicolas LAVAL**
+**Made with ❤️ by nic01asFr**
 
 *Enabling seamless AI integration with collaborative documentation*
 
