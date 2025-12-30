@@ -1,6 +1,4 @@
-![icon-docs-dsfr.svg](https://docs.numerique.gouv.fr/assets/icon-docs-dsfr.svg)
-# Docs MCP Server
-
+<img src="https://docs.numerique.gouv.fr/assets/icon-docs-dsfr.svg" width="48" alt="Icône DSFR"># Docs MCP Server
 <div align="center">
 
 **🚀 Professional MCP Server for Docs**
