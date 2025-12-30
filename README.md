@@ -1,3 +1,4 @@
+![icon-docs-dsfr.svg](https://docs.numerique.gouv.fr/assets/icon-docs-dsfr.svg)
 # Docs MCP Server
 
 <div align="center">
